@@ -257,7 +257,8 @@ body.ar .pill{letter-spacing:0}
 .hotel .tx b{font-size:14px;display:flex;gap:6px;align-items:center;flex-wrap:wrap}
 .hotel .rt{font-size:11.5px;color:var(--muted);display:inline-flex;align-items:center;gap:2px;font-weight:600}
 .hotel .rt svg{width:13px;height:13px;color:var(--gold);fill:var(--gold);stroke:none}
-.hotel .pinb{color:var(--mint);padding:4px}
+.hotel .pinb{color:var(--mint);padding:8px;margin:-4px;border-radius:50%;display:grid;place-items:center;text-decoration:none}
+.pinb:hover{background:rgba(94,235,200,.12)}
 .hotel .pinb svg{width:18px;height:18px}
 .rides{display:grid;grid-template-columns:repeat(3,1fr);gap:10px}
 .rides button{padding:14px 6px;border-radius:16px;background:var(--surface);border:1px solid var(--line);display:flex;flex-direction:column;align-items:center;gap:5px;text-align:center;transition:all .2s;font-size:13px}
@@ -455,6 +456,8 @@ body.ar .pill{letter-spacing:0}
   .side{display:none}
   .phone{width:min(100%,480px);height:100%;border-radius:0;box-shadow:0 0 0 1px rgba(255,255,255,.08)}
 }
+/* hide the "Powered by Netlify" badge that Netlify injects on public free-plan sites */
+#nl-badge-frame,iframe[id*='nl-badge']{display:none!important;visibility:hidden!important;pointer-events:none!important}
 </style>
 
 </head>
@@ -617,7 +620,7 @@ const D = {
  ios_t:["Install Wevibe","تثبيت Wevibe"], ios1:["Tap the Share button in Safari's toolbar.","اضغط زر المشاركة في شريط Safari."], ios2:["Choose “Add to Home Screen”.","اختر «إضافة إلى الشاشة الرئيسية»."], ios3:["Tap Add. Wevibe opens full-screen, even offline.","اضغط إضافة. Wevibe بيفتح بملء الشاشة، حتى بدون إنترنت."],
  installed:["Wevibe is installed","تم تثبيت Wevibe"], offline:["You're offline. The app still works.","أنت غير متصل. التطبيق يشتغل عادي."],
  incl:["Included","مشمول"], options_n:["{n} options","{n} خيارات"], choosenext:["You'll choose one in the next step","بتختار واحد منها في الخطوة الجاية"],
- incl_of:["{n} of 3 included","{n} من 3 مشمولة"], notincl:["Not included","غير مشمول"], packhint:["Tick what you need. The price updates instantly.","حدّد اللي تحتاجه، والسعر يتحدّث تلقائياً."],
+ openmaps:["Open in Google Maps","افتح في خرائط قوقل"], incl_of:["{n} of 3 included","{n} من 3 مشمولة"], notincl:["Not included","غير مشمول"], packhint:["Tick what you need. The price updates instantly.","حدّد اللي تحتاجه، والسعر يتحدّث تلقائياً."],
  keepone:["Keep at least one item in your pack.","لازم تبقى خدمة وحدة على الأقل في باقتك."], inyourpack:["In your pack · tap to add or remove","في باقتك · اضغط للإضافة أو الإزالة"], ride_c:["Ride","التوصيل"],
  nostay:["No stay in your pack, so your plan covers event day only.","ما في سكن في باقتك، فخطتك ليوم الفعالية فقط."], addstay:["Add a stay","أضف سكن"],
  noticket:["No ticket in your pack","بدون تذكرة في باقتك"], airportv:["King Khalid Airport → {v}","مطار الملك خالد ← {v}"], pickupv:["Pickup from your location → {v}","استلام من موقعك ← {v}"], tickadd:["Tick the box to add this to your pack","حدّد المربع عشان تضيفها لباقتك"],
@@ -659,6 +662,8 @@ const ACTS = {
 const PROMOS = {WEVIBE10:{type:'pct',v:10}, GAMER50:{type:'flat',v:50}};
 
 /* ---------- state ---------- */
+// Normal links always open on the splash screen. Deep links (#screen) work only with ?nav=1 (used by tests and PWA shortcuts).
+const DEEPLINK = /[?&]nav=1(&|$)/.test(location.search);
 const S = {
  lang:'en', route:'splash', stack:[], eventId:'cup', ticket:'vip', hotel:'diriyah', ride:'shuttle', guests:1,
  checkin:null, checkout:null, datesTouched:false, acts:{}, cat:'tournaments', q:'', fav:{}, promo:null, promoIn:'', promoErr:false,
@@ -716,6 +721,7 @@ const bbar = (amount, sub, cta, act, opts={}) => `
  </div>`;
 const tabbar = on => `<nav class="tabbar">${[['home','home'],['trips','bag'],['profile','user']].map(([r,i])=>`<button class="${on===r?'on':''}" data-a="tab" data-v="${r}" aria-label="${t(r)}" ${on===r?'aria-current="page"':''}>${ic(i)}<span>${t(r)}</span></button>`).join('')}</nav>`;
 const langsw = () => `<div class="langsw" role="group" aria-label="Language"><button class="${S.lang==='en'?'on':''}" data-a="lang" data-v="en">EN</button><button class="${S.lang==='ar'?'on':''}" data-a="lang" data-v="ar">عربي</button></div>`;
+const mapsUrl = h => 'https://www.google.com/maps/search/?api=1&query=' + encodeURIComponent(h.name.en + ', Riyadh, Saudi Arabia');
 const incChips = () => `<div class="incchips" role="group">${[['ticket','ticket','ticket'],['stay','bed','stay'],['ride','bus','ride_c']].map(([k,i,l])=>`<button role="checkbox" aria-checked="${S.inc[k]}" data-a="incl" data-v="${k}">${ic(S.inc[k]?'check':'plus')}${ic(i)}${t(l)}</button>`).join('')}</div>`;
 const thumb = (e, cls='th') => e.card ? `<div class="${cls}" style="${bgImg(e.card)}"></div>` : `<div class="${cls} art">${ic(e.icon)}</div>`;
 
@@ -821,7 +827,7 @@ pack: () => { const e=EV(); ensureDates(); const c=calc(); let n=0; return `
     <div class="hotel ${S.hotel===k?'sel':''}" data-a="hotel" data-v="${k}" role="button" tabindex="0">
      <span class="ibox">${ic('bed')}</span>
      <div class="tx"><b>${tx(h.name)} <span class="rt">${ic('star')}${h.rating}/5</span></b><span class="tiny muted">${t('away',{n:h.min})} · ${money(h.price)} / ${t('night')}</span></div>
-     <button class="pinb" data-a="hotelinfo" data-v="${k}" aria-label="Hotel details">${ic('pin')}</button>
+     <a class="pinb" data-a="map" href="${mapsUrl(h)}" target="_blank" rel="noopener" aria-label="${t('openmaps')}: ${tx(h.name)}">${ic('pin')}</a>
      ${S.hotel===k?`<span class="btn-sm on">${ic('check')}${t('added')}</span>`:`<button class="btn-sm" data-a="hotel" data-v="${k}" aria-label="${t('add')} ${tx(h.name)}">${ic('plus')}${t('add')}</button>`}
     </div>`).join('')}
   </div>`:''}
@@ -1058,7 +1064,7 @@ function go(route, back=false){
  const old=cur; app.appendChild(el); cur=el;
  if(old){ old.classList.add('out'); setTimeout(()=>old.remove(),260); }
  after(); renderSide(); closeSheet(true);
- if(location.hash.slice(1)!==route){ try{ history.replaceState(null,'','#'+route); }catch(e){ location.hash=route; } }
+ if(DEEPLINK && location.hash.slice(1)!==route){ try{ history.replaceState(null,'','#'+route); }catch(e){} }
 }
 function back(){ const r=S.stack.pop() || 'home'; go(r,true); }
 
@@ -1143,6 +1149,7 @@ function onClick(ev){
   case 'incl': { S.inc[v]=!S.inc[v]; if(!incCount()){ S.inc[v]=true; toast(t('keepone')); break; }
     if(v==='stay' && S.inc.stay && S.route==='dates' && !S.datesTouched){ const e=EV(); S.checkin=addDays(e.date,-1); S.checkout=addDays(e.date,1); }
     render(); break; }
+  case 'map': return; // real link: let the browser open Google Maps, and do not select the hotel
   case 'ticket': S.ticket=v; render(); break;
   case 'hotel': S.hotel=v; render(); break;
   case 'hotelinfo': { const h=HOTELS[v]; openSheet(tx(h.name), `
@@ -1226,7 +1233,7 @@ app.addEventListener('input', e=>{
  if(el.id==='ccvv'){ el.value=el.value.replace(/\D/g,'').slice(0,3); S.card.cvv=el.value; }
  if(el.id && el.id.startsWith('otp')){ el.value=el.value.replace(/\D/g,'').slice(0,1); el.style.borderColor=''; const n=document.getElementById('otp'+(+el.id.slice(3)+1)); if(el.value&&n) n.focus(); }
 });
-window.addEventListener('hashchange', ()=>{ const r=location.hash.slice(1); if(r && r!==S.route && SCREENS[r]) go(r); });
+window.addEventListener('hashchange', ()=>{ if(!DEEPLINK){ if(location.hash!=='#splash'){ try{ history.replaceState(null,'',location.pathname+location.search+'#splash'); }catch(e){} } return; } const r=location.hash.slice(1); if(r && r!==S.route && SCREENS[r]) go(r); });
 
 /* ---------- PWA ---------- */
 const PWA = {prompt:null};
@@ -1243,7 +1250,8 @@ if('serviceWorker' in navigator && !inFrame && /^https?:$/.test(location.protoco
 
 /* ---------- boot ---------- */
 store.load();
-{ const r=location.hash.slice(1); if(r && SCREENS[r] && r!=='splash'){ S.route=r; if(['event','pack','dates','plan','pay'].includes(r)) S.stack=['home']; } }
+if(!DEEPLINK){ try{ history.replaceState(null,'',location.pathname+location.search+'#splash'); }catch(e){} } // the home page is always /#splash
+{ const r=DEEPLINK?location.hash.slice(1):''; if(r && SCREENS[r] && r!=='splash'){ S.route=r; if(['event','pack','dates','plan','pay'].includes(r)) S.stack=['home']; } }
 if(S.route==='dates'){ const e=EV(); S.checkin=addDays(e.date,-1); S.checkout=addDays(e.date,1); }
 if(S.route==='done' && !S.last) S.last=makeBooking();
 app.setAttribute('dir', S.lang==='ar'?'rtl':'ltr'); document.body.classList.toggle('ar', S.lang==='ar'); document.documentElement.lang=S.lang;

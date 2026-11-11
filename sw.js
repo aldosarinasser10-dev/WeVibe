@@ -1,5 +1,5 @@
 /* Wevibe service worker: precache the app shell, cache Google Fonts at runtime, work offline. */
-const VERSION = 'wevibe-v8';
+const VERSION = 'wevibe-v13';
 const SHELL = ['./', './index.html', './manifest.webmanifest',
   './icons/icon-192.png', './icons/icon-512.png', './icons/maskable-512.png', './icons/apple-touch-icon.png', './icons/favicon-32.png'];
 

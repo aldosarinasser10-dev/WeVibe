@@ -3,7 +3,7 @@
   "name": "Wevibe — Your gaming trip, one tap away",
   "short_name": "Wevibe",
   "description": "Book your gaming trip to Riyadh: event tickets, a gaming-ready stay and a ride to the venue in one booking. احجز رحلتك للألعاب في الرياض: التذاكر والسكن والتوصيل في حجز واحد.",
-  "start_url": "./?source=pwa",
+  "start_url": "./?source=pwa#splash",
   "scope": "./",
   "display": "standalone",
   "display_override": ["standalone", "minimal-ui"],
@@ -19,7 +19,7 @@
     { "src": "icons/maskable-512.png", "sizes": "512x512", "type": "image/png", "purpose": "maskable" }
   ],
   "shortcuts": [
-    { "name": "Find events", "short_name": "Events", "url": "./?source=shortcut#home", "icons": [{ "src": "icons/icon-192.png", "sizes": "192x192" }] },
-    { "name": "My Trips", "short_name": "Trips", "url": "./?source=shortcut#trips", "icons": [{ "src": "icons/icon-192.png", "sizes": "192x192" }] }
+    { "name": "Find events", "short_name": "Events", "url": "./?nav=1#home", "icons": [{ "src": "icons/icon-192.png", "sizes": "192x192" }] },
+    { "name": "My Trips", "short_name": "Trips", "url": "./?nav=1#trips", "icons": [{ "src": "icons/icon-192.png", "sizes": "192x192" }] }
   ]
 }
